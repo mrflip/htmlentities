@@ -7,8 +7,10 @@ require 'htmlentities/legacy'
 class HTMLEntities
 
   VERSION = '4.0.0'
-  FLAVORS = %w[html4 xhtml1]
+  FLAVORS = %w[html4 xhtml1 expanded]
   INSTRUCTIONS = [:basic, :named, :decimal, :hexadecimal]
+  MAPPINGS           = {} unless defined? MAPPINGS
+  SKIP_DUP_ENCODINGS = {} unless defined? SKIP_DUP_ENCODINGS
 
   class InstructionError < RuntimeError
   end
@@ -17,9 +19,22 @@ class HTMLEntities
 
   #
   # Create a new HTMLEntities coder for the specified flavor.
-  # Available flavors are 'html4' and 'xhtml1' (the default).
-  # The only difference in functionality between the two is in the handling of the apos
-  # (apostrophe) named entity, which is not defined in HTML4.
+  # Available flavors are 'html4', 'expanded' and 'xhtml1' (the default).
+  #
+  # The only difference in functionality between html4 and xhtml1 is in the
+  # handling of the apos (apostrophe) named entity, which is not defined in
+  # HTML4.
+  #
+  # 'expanded' includes a large number of additional SGML entities drawn from
+  #   ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/MISC/SGML.TXT
+  # it "maps SGML character entities from various public sets (namely, ISOamsa,
+  # ISOamsb, ISOamsc, ISOamsn, ISOamso, ISOamsr, ISObox, ISOcyr1, ISOcyr2,
+  # ISOdia, ISOgrk1, ISOgrk2, ISOgrk3, ISOgrk4, ISOlat1, ISOlat2, ISOnum,
+  # ISOpub, ISOtech, HTMLspecial, HTMLsymbol) to corresponding Unicode
+  # characters." (sgml.txt).
+  #
+  # 'expanded' is a strict superset of the XHTML entities: every xhtml named
+  # entity encodes and decodes the same under :expanded as under :xhtml1
   #
   def initialize(flavor='xhtml1')
     @flavor = flavor.to_s.downcase
@@ -75,7 +90,7 @@ class HTMLEntities
       raise InstructionError,
       "unknown encode_entities command(s): #{unknown_instructions.inspect}"
     end
-    
+
     basic_entity_encoder =
     if instructions.include?(:basic) || instructions.include?(:named)
       :encode_named
@@ -85,7 +100,7 @@ class HTMLEntities
       :encode_hexadecimal
     end
     string.gsub!(basic_entity_regexp){ __send__(basic_entity_encoder, $&) }
-    
+
     extended_entity_encoders = []
     if instructions.include?(:named)
       extended_entity_encoders << :encode_named
@@ -100,7 +115,7 @@ class HTMLEntities
         encode_extended(extended_entity_encoders, $&)
       }
     end
-    
+
     return string
   end
 
@@ -120,7 +135,7 @@ private
       end
     )
   end
-  
+
   def extended_entity_regexp
     @extended_entity_regexp ||= (
       regexp = '[\x00-\x1f]|[\xc0-\xfd][\x80-\xbf]+'
@@ -133,12 +148,19 @@ private
     @named_entity_regexp ||= (
       min_length = map.keys.map{ |a| a.length }.min
       max_length = map.keys.map{ |a| a.length }.max
-      /&([a-z][a-z0-9]{#{min_length-1},#{max_length-1}});/i
+      ok_chars = @flavor.to_s == 'expanded' ? '[a-z][a-z0-9\.]' : '[a-z][a-z0-9]'
+      /&(#{ok_chars}{#{min_length-1},#{max_length-1}});/i
     )
   end
 
+  def reverse_map_skipping_dups
+    skips = HTMLEntities::SKIP_DUP_ENCODINGS[@flavor]
+    uniqmap = skips ? map.reject{|ent,hx| skips.include? ent} : map
+    uniqmap.invert
+  end
+
   def reverse_map
-    @reverse_map ||= map.invert
+    @reverse_map ||= reverse_map_skipping_dups
   end
 
   def encode_named(char)
@@ -153,7 +175,7 @@ private
   def encode_hexadecimal(char)
     "&#x#{char.unpack('U')[0].to_s(16)};"
   end
-  
+
   def encode_extended(encoders, char)
     encoders.each do |encoder|
       encoded = __send__(encoder, char)

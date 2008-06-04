@@ -1,3 +1,4 @@
+# -*- coding: mule-utf-8 -*-
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'htmlentities'
 require 'test/unit'
@@ -19,6 +20,10 @@ class HTMLEntities::HTML4Test < Test::Unit::TestCase
 
   def test_should_not_decode_apos_entity
     assert_equal "é&apos;", html_entities.decode("&eacute;&apos;")
+  end
+
+  def test_should_not_decode_dotted_entity
+    assert_equal "&b.Theta;", html_entities.decode("&b.Theta;")
   end
 
 end
