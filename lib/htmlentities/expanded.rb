@@ -1,4 +1,3 @@
-# -*- coding: mule-utf-8 -*-
 class HTMLEntities
   #
   # This table added by Philip (flip) Kromer <flip@infochimps.org>
@@ -39,7 +38,6 @@ class HTMLEntities
   #
   # The contents of this table are drawn from various sources, and are
   # in the public domain.
-  #
   #
   MAPPINGS['expanded'] = {
     'Aacgr'          => 0x0386,   # Ά                  GREEK CAPITAL LETTER ALPHA WITH TONOS
@@ -1036,5 +1034,16 @@ class HTMLEntities
     'zwnj'           => 0x200c,   # ‌       xhtml      ZERO WIDTH NON-JOINER
     'euro'           => 0x20ac,   # €       xhtml      EURO SIGN
   }
-  SKIP_DUP_ENCODINGS['expanded'] = ["ap", "thkap", "rsquor", "aleph", "lsquor", "square", "rdquor", "ldquor", "b.kappav", "b.rhov", "mldr", "xlArr", "die", "Dot", "xrArr", "iff", "les", "ges", "vprime", "lne", "lvnE", "gne", "gvnE", "nles", "nges", "half", "xcirc", "pre", "sce", "Agr", "Bgr", "subE", "b.Gamma", "Ggr", "supE", "b.Delta", "Dgr", "nsube", "nsupe", "Egr", "Zgr", "subne", "vsubnE", "vsubne", "EEgr", "supne", "vsupnE", "vsupne", "b.Theta", "THgr", "Igr", "Kgr", "b.Lambda", "Lgr", "Mgr", "Ngr", "b.Xi", "Xgr", "Ogr", "b.Pi", "Pgr", "sfrown", "Rgr", "ssmile", "b.Sigma", "Sgr", "Tgr", "b.Upsi", "Ugr", "Upsi", "b.Phi", "PHgr", "KHgr", "b.Psi", "PSgr", "b.Omega", "OHgr", "coprod", "samalg", "sbsol", "ssetmn", "agr", "b.alpha", "bottom", "b.beta", "bgr", "b.gamma", "ggr", "b.delta", "dgr", "b.epsi", "b.epsis", "b.epsiv", "egr", "epsi", "b.zeta", "zgr", "vprop", "b.eta", "eegr", "b.thetas", "thetas", "thgr", "b.iota", "igr", "b.kappa", "kgr", "b.lambda", "lgr", "xhArr", "xharr", "b.mu", "mgr", "b.nu", "ngr", "b.xi", "xgr", "spar", "ogr", "nspar", "b.pi", "pgr", "b.rho", "rgr", "b.sigmav", "sfgr", "sigmav", "b.sigma", "sgr", "b.tau", "tgr", "b.upsi", "ugr", "upsi", "b.phis", "phgr", "phis", "b.chi", "khgr", "b.psi", "psgr", "ohgr", "b.omega", "b.thetav", "thetav", "b.phiv", "thksim", "b.piv", "b.gammad"]
+  SKIP_DUP_ENCODINGS['expanded'] = %w[
+    ap thkap rsquor aleph lsquor square rdquor ldquor b.kappav b.rhov mldr xlArr die Dot xrArr iff
+    les ges vprime lne lvnE gne gvnE nles nges half xcirc pre sce Agr Bgr subE b.Gamma Ggr supE
+    b.Delta Dgr nsube nsupe Egr Zgr subne vsubnE vsubne EEgr supne vsupnE vsupne b.Theta THgr Igr
+    Kgr b.Lambda Lgr Mgr Ngr b.Xi Xgr Ogr b.Pi Pgr sfrown Rgr ssmile b.Sigma Sgr Tgr b.Upsi Ugr
+    Upsi b.Phi PHgr KHgr b.Psi PSgr b.Omega OHgr coprod samalg sbsol ssetmn agr b.alpha bottom
+    b.beta bgr b.gamma ggr b.delta dgr b.epsi b.epsis b.epsiv egr epsi b.zeta zgr vprop b.eta eegr
+    b.thetas thetas thgr b.iota igr b.kappa kgr b.lambda lgr xhArr xharr b.mu mgr b.nu ngr b.xi
+    xgr spar ogr nspar b.pi pgr b.rho rgr b.sigmav sfgr sigmav b.sigma sgr b.tau tgr b.upsi ugr
+    upsi b.phis phgr phis b.chi khgr b.psi psgr ohgr b.omega b.thetav thetav b.phiv thksim b.piv
+    b.gammad
+  ]
 end

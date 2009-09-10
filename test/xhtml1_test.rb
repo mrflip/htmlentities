@@ -1,4 +1,3 @@
-# -*- coding: mule-utf-8 -*-
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'htmlentities'
 require 'test/unit'

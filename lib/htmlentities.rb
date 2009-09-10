@@ -90,7 +90,7 @@ class HTMLEntities
       raise InstructionError,
       "unknown encode_entities command(s): #{unknown_instructions.inspect}"
     end
-
+    
     basic_entity_encoder =
     if instructions.include?(:basic) || instructions.include?(:named)
       :encode_named
@@ -100,7 +100,7 @@ class HTMLEntities
       :encode_hexadecimal
     end
     string.gsub!(basic_entity_regexp){ __send__(basic_entity_encoder, $&) }
-
+    
     extended_entity_encoders = []
     if instructions.include?(:named)
       extended_entity_encoders << :encode_named
@@ -115,7 +115,7 @@ class HTMLEntities
         encode_extended(extended_entity_encoders, $&)
       }
     end
-
+    
     return string
   end
 
@@ -135,7 +135,7 @@ private
       end
     )
   end
-
+  
   def extended_entity_regexp
     @extended_entity_regexp ||= (
       regexp = '[\x00-\x1f]|[\xc0-\xfd][\x80-\xbf]+'
@@ -148,7 +148,7 @@ private
     @named_entity_regexp ||= (
       min_length = map.keys.map{ |a| a.length }.min
       max_length = map.keys.map{ |a| a.length }.max
-      ok_chars = @flavor.to_s == 'expanded' ? '[a-z][a-z0-9\.]' : '[a-z][a-z0-9]'
+      ok_chars = @flavor.to_s == 'expanded' ? '(?:b\.)?[a-z][a-z0-9]' : '[a-z][a-z0-9]'
       /&(#{ok_chars}{#{min_length-1},#{max_length-1}});/i
     )
   end
@@ -175,7 +175,7 @@ private
   def encode_hexadecimal(char)
     "&#x#{char.unpack('U')[0].to_s(16)};"
   end
-
+  
   def encode_extended(encoders, char)
     encoders.each do |encoder|
       encoded = __send__(encoder, char)
