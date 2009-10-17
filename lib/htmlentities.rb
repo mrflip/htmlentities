@@ -1,21 +1,15 @@
+# encoding: UTF-8
 require 'htmlentities/legacy'
+require 'htmlentities/flavors'
+require 'htmlentities/encoder'
+require 'htmlentities/decoder'
+require 'htmlentities/version'
 
 #
 # HTML entity encoding and decoding for Ruby
 #
-
 class HTMLEntities
-
-  VERSION = '4.0.0'
-  FLAVORS = %w[html4 xhtml1 expanded]
-  INSTRUCTIONS = [:basic, :named, :decimal, :hexadecimal]
-  MAPPINGS           = {} unless defined? MAPPINGS
-  SKIP_DUP_ENCODINGS = {} unless defined? SKIP_DUP_ENCODINGS
-
-  class InstructionError < RuntimeError
-  end
-  class UnknownFlavor < RuntimeError
-  end
+  UnknownFlavor = Class.new(RuntimeError)
 
   #
   # Create a new HTMLEntities coder for the specified flavor.
@@ -43,18 +37,12 @@ class HTMLEntities
 
   #
   # Decode entities in a string into their UTF-8
-  # equivalents.  Obviously, if your string is not already in UTF-8, you'd
-  # better convert it before using this method, or the output will be mixed
-  # up.
+  # equivalents. The string should already be in UTF-8 encoding.
   #
   # Unknown named entities will not be converted
   #
   def decode(source)
-    return source.to_s.gsub(named_entity_regexp) {
-      (cp = map[$1]) ? [cp].pack('U') : $&
-    }.gsub(/&#([0-9]{1,7});|&#x([0-9a-f]{1,6});/i) {
-      $1 ? [$1.to_i].pack('U') : [$2.to_i(16)].pack('U')
-    }
+    Decoder.new(@flavor).decode(source)
   end
 
   #
@@ -83,105 +71,6 @@ class HTMLEntities
   # contains valid UTF-8 before calling this method.
   #
   def encode(source, *instructions)
-    string = source.to_s.dup
-    if (instructions.empty?)
-      instructions = [:basic]
-    elsif (unknown_instructions = instructions - INSTRUCTIONS) != []
-      raise InstructionError,
-      "unknown encode_entities command(s): #{unknown_instructions.inspect}"
-    end
-    
-    basic_entity_encoder =
-    if instructions.include?(:basic) || instructions.include?(:named)
-      :encode_named
-    elsif instructions.include?(:decimal)
-      :encode_decimal
-    else instructions.include?(:hexadecimal)
-      :encode_hexadecimal
-    end
-    string.gsub!(basic_entity_regexp){ __send__(basic_entity_encoder, $&) }
-    
-    extended_entity_encoders = []
-    if instructions.include?(:named)
-      extended_entity_encoders << :encode_named
-    end
-    if instructions.include?(:decimal)
-      extended_entity_encoders << :encode_decimal
-    elsif instructions.include?(:hexadecimal)
-      extended_entity_encoders << :encode_hexadecimal
-    end
-    unless extended_entity_encoders.empty?
-      string.gsub!(extended_entity_regexp){
-        encode_extended(extended_entity_encoders, $&)
-      }
-    end
-    
-    return string
+    Encoder.new(@flavor, instructions).encode(source)
   end
-
-private
-
-  def map
-    @map ||= (require "htmlentities/#{@flavor}"; HTMLEntities::MAPPINGS[@flavor])
-  end
-
-  def basic_entity_regexp
-    @basic_entity_regexp ||= (
-      case @flavor
-      when /^html/
-        /[<>"&]/
-      else
-        /[<>'"&]/
-      end
-    )
-  end
-  
-  def extended_entity_regexp
-    @extended_entity_regexp ||= (
-      regexp = '[\x00-\x1f]|[\xc0-\xfd][\x80-\xbf]+'
-      regexp += "|'" if @flavor == 'html4'
-      Regexp.new(regexp)
-    )
-  end
-
-  def named_entity_regexp
-    @named_entity_regexp ||= (
-      min_length = map.keys.map{ |a| a.length }.min
-      max_length = map.keys.map{ |a| a.length }.max
-      ok_chars = @flavor.to_s == 'expanded' ? '(?:b\.)?[a-z][a-z0-9]' : '[a-z][a-z0-9]'
-      /&(#{ok_chars}{#{min_length-1},#{max_length-1}});/i
-    )
-  end
-
-  def reverse_map_skipping_dups
-    skips = HTMLEntities::SKIP_DUP_ENCODINGS[@flavor]
-    uniqmap = skips ? map.reject{|ent,hx| skips.include? ent} : map
-    uniqmap.invert
-  end
-
-  def reverse_map
-    @reverse_map ||= reverse_map_skipping_dups
-  end
-
-  def encode_named(char)
-    cp = char.unpack('U')[0]
-    (e = reverse_map[cp]) && "&#{e};"
-  end
-
-  def encode_decimal(char)
-    "&##{char.unpack('U')[0]};"
-  end
-
-  def encode_hexadecimal(char)
-    "&#x#{char.unpack('U')[0].to_s(16)};"
-  end
-  
-  def encode_extended(encoders, char)
-    encoders.each do |encoder|
-      encoded = __send__(encoder, char)
-      return encoded if encoded
-    end
-    return char
-  end
-
 end

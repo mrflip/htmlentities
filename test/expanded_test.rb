@@ -1,8 +1,9 @@
+# encoding: UTF-8
 $:.unshift(File.dirname(__FILE__) + '/../lib')
-require 'htmlentities'
 require 'test/unit'
+require 'htmlentities'
 
-$KCODE = 'u'
+$KCODE = 'u' unless "1.9".respond_to?(:encoding)
 
 class HTMLEntities::ExpandedTest < Test::Unit::TestCase
 
@@ -109,4 +110,3 @@ class HTMLEntities::ExpandedTest < Test::Unit::TestCase
     end
   end
 end
-

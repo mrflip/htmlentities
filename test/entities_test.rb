@@ -1,8 +1,9 @@
+# encoding: UTF-8
 $:.unshift(File.dirname(__FILE__) + '/../lib')
-require 'htmlentities'
 require 'test/unit'
+require 'htmlentities'
 
-$KCODE = 'u'
+$KCODE = 'u' unless "1.9".respond_to?(:encoding)
 
 class HTMLEntities::EntitiesTest < Test::Unit::TestCase
 
@@ -21,7 +22,7 @@ class HTMLEntities::EntitiesTest < Test::Unit::TestCase
       @string
     end
   end
-  
+
   def test_should_raise_exception_when_unknown_flavor_specified
     assert_raises(HTMLEntities::UnknownFlavor) do
       HTMLEntities.new('foo')
@@ -52,7 +53,7 @@ class HTMLEntities::EntitiesTest < Test::Unit::TestCase
     assert_encode('&lt;', '<', :basic)
     assert_encode('&lt;', '<')
   end
-  
+
   def test_should_encode_basic_entities_to_decimal
     assert_encode('&#38;', '&', :decimal)
     assert_encode('&#34;', '"', :decimal)

@@ -1,5 +1,6 @@
+# encoding: UTF-8
 class HTMLEntities
-  MAPPINGS['html4'] = {
+  MAPPINGS['xhtml1'] = {
     'Aacute' => 193,
     'aacute' => 225,
     'Acirc' => 194,
@@ -15,6 +16,7 @@ class HTMLEntities
     'amp' => 38,
     'and' => 8743,
     'ang' => 8736,
+    'apos' => 39,
     'Aring' => 197,
     'aring' => 229,
     'asymp' => 8776,
